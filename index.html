@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HeyTrader.io — Markets that move. Trade them.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07080B; --glass:rgba(255,255,255,.035); --glass-2:rgba(255,255,255,.06);
+  --edge:rgba(255,255,255,.08); --text:#F4F5F7; --muted:#8F98A3; --faint:#646D78;
+  --gold:#F5C044; --gold-hot:#FFD97A; --violet:#8B7CFF; --green:#41E296; --red:#FF6166;
+  --r:20px; --maxw:1140px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',system-ui,sans-serif;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+.mono{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+.up{color:var(--green)} .down{color:var(--red)}
+
+.orbs{position:fixed;inset:0;z-index:-1;pointer-events:none}
+.orb{position:absolute;border-radius:50%;filter:blur(90px);opacity:.35}
+.orb.a{width:520px;height:520px;background:radial-gradient(circle,rgba(245,192,68,.35),transparent 70%);top:-180px;left:8%}
+.orb.b{width:460px;height:460px;background:radial-gradient(circle,rgba(139,124,255,.22),transparent 70%);top:240px;right:-120px}
+.orb.c{width:420px;height:420px;background:radial-gradient(circle,rgba(65,226,150,.1),transparent 70%);top:2100px;left:-140px}
+.orb.d{width:480px;height:480px;background:radial-gradient(circle,rgba(245,192,68,.14),transparent 70%);top:3600px;right:-160px}
+
+.riskbar{font-size:11.5px;color:#B7A26A;text-align:center;padding:8px 16px;background:rgba(245,192,68,.05);border-bottom:1px solid rgba(245,192,68,.1);font-family:'JetBrains Mono',monospace}
+
+nav{position:sticky;top:0;z-index:50;background:rgba(7,8,11,.7);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.05)}
+.nav-inner{display:flex;align-items:center;height:70px;gap:36px}
+.logo{font-family:'Unbounded',sans-serif;font-weight:700;font-size:15px;display:flex;align-items:center;gap:10px}
+.logo .mark{width:28px;height:28px;border-radius:9px;background:linear-gradient(135deg,var(--gold),#C6952F);display:grid;place-items:center;color:#141005;font-size:13px}
+.logo .io{color:var(--gold)}
+.nav-links{display:flex;gap:26px;font-size:14px;color:var(--muted);font-weight:500}
+.nav-links a:hover{color:var(--text)}
+.nav-cta{margin-left:auto}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:14px;border-radius:999px;padding:11px 24px;border:1px solid transparent;cursor:pointer;transition:all .18s;font-family:'Space Grotesk',sans-serif}
+.btn-gold{background:linear-gradient(120deg,var(--gold),var(--gold-hot));color:#171104;box-shadow:0 0 28px rgba(245,192,68,.25)}
+.btn-gold:hover{box-shadow:0 0 44px rgba(245,192,68,.45);transform:translateY(-1px)}
+.btn-glass{background:var(--glass);border-color:var(--edge);color:var(--text)}
+.btn-lg{padding:16px 36px;font-size:16px}
+
+.hero{padding:100px 0 0;text-align:center;position:relative}
+.pill{display:inline-flex;align-items:center;gap:9px;font-size:12.5px;color:var(--muted);border:1px solid var(--edge);background:var(--glass);backdrop-filter:blur(10px);border-radius:999px;padding:8px 18px;margin-bottom:34px;font-family:'JetBrains Mono',monospace}
+.pill .dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+h1{font-family:'Unbounded',sans-serif;font-weight:700;font-size:clamp(36px,5.6vw,64px);line-height:1.08;letter-spacing:-.02em;max-width:860px;margin:0 auto 26px}
+h1 .g{background:linear-gradient(100deg,var(--gold) 10%,var(--gold-hot) 50%,var(--violet) 110%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lede{color:var(--muted);font-size:18px;max-width:480px;margin:0 auto 40px}
+.hero-actions{display:flex;justify-content:center;margin-bottom:18px}
+.hero-fine{font-size:12px;color:var(--faint);font-family:'JetBrains Mono',monospace}
+.hero-fine a{color:var(--muted);text-decoration:underline;text-underline-offset:3px}
+.hero-chips{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:44px}
+.chip{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);border:1px solid var(--edge);background:var(--glass);border-radius:999px;padding:7px 16px}
+
+.tape{border-block:1px solid rgba(255,255,255,.05);background:rgba(255,255,255,.015);overflow:hidden;padding:18px 0;margin-top:70px}
+.tape-track{display:flex;gap:56px;width:max-content;animation:tape 34s linear infinite}
+.tape:hover .tape-track{animation-play-state:paused}
+.tape-item{display:flex;gap:14px;align-items:baseline;font-family:'JetBrains Mono',monospace;font-size:14px;white-space:nowrap}
+.tape-item .s{color:var(--faint);font-size:12px;letter-spacing:.06em}
+.tape-item .p{font-weight:600;font-size:15px}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){.tape-track,.pill .dot{animation:none!important}.orb{display:none}}
+
+section{padding:110px 0}
+.k{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:18px;display:block}
+h2{font-family:'Unbounded',sans-serif;font-weight:600;font-size:clamp(26px,3.4vw,40px);letter-spacing:-.02em;line-height:1.14;margin-bottom:14px}
+.sec-head{max-width:620px;margin-bottom:56px}
+.sec-head p{color:var(--muted);font-size:16.5px}
+.sec-head.center{text-align:center;margin-inline:auto}
+
+/* media blocks — every image lives in /images and can be swapped or edited
+   (SVG sources for all PNGs are in /images/src) */
+.media{display:flex;justify-content:center;margin:0 auto 52px;max-width:780px}
+.media img{width:100%;height:auto;display:block}
+.media.sm{max-width:320px;margin-bottom:36px}
+.media.left{justify-content:flex-start;margin-left:0}
+
+.mission{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.m-card{background:var(--glass);border:1px solid var(--edge);border-radius:26px;padding:44px;backdrop-filter:blur(10px);position:relative;overflow:hidden}
+.m-card::before{content:"";position:absolute;top:-40%;right:-20%;width:60%;height:100%;background:radial-gradient(circle,rgba(245,192,68,.1),transparent 70%)}
+.m-card.v::before{background:radial-gradient(circle,rgba(139,124,255,.12),transparent 70%)}
+.m-card .tag{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:20px;display:block}
+.m-card.v .tag{color:var(--violet)}
+.m-card h3{font-family:'Unbounded',sans-serif;font-size:22px;font-weight:600;line-height:1.3;margin-bottom:16px}
+.m-card p{color:var(--muted);font-size:15px}
+.m-quote{grid-column:1/-1;text-align:center;padding:44px 24px 8px}
+.m-quote p{font-family:'Unbounded',sans-serif;font-size:clamp(18px,2.4vw,26px);font-weight:500;line-height:1.5;max-width:760px;margin:0 auto}
+.m-quote .g{background:linear-gradient(100deg,var(--gold),var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* stats strip — the selling points, loud */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:60px}
+.stat{text-align:center;padding:34px 14px 28px;background:var(--glass);border:1px solid var(--edge);border-radius:var(--r);backdrop-filter:blur(10px);position:relative;overflow:hidden;transition:transform .2s,border-color .2s}
+.stat:hover{transform:translateY(-3px);border-color:rgba(245,192,68,.3)}
+.stat::before{content:"";position:absolute;top:-50%;left:20%;width:60%;height:70%;background:radial-gradient(circle,rgba(245,192,68,.12),transparent 70%)}
+.stat .n{font-family:'Unbounded',sans-serif;font-size:clamp(30px,3.8vw,44px);font-weight:700;line-height:1;background:linear-gradient(120deg,var(--gold),var(--gold-hot));-webkit-background-clip:text;background-clip:text;color:transparent;display:block;margin-bottom:12px}
+.stat .l{font-size:12px;color:var(--muted);font-family:'JetBrains Mono',monospace;letter-spacing:.08em;text-transform:uppercase}
+
+.bento{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.b{background:var(--glass);border:1px solid var(--edge);border-radius:var(--r);padding:30px;backdrop-filter:blur(10px);transition:transform .2s,border-color .2s;position:relative;overflow:hidden}
+.b:hover{transform:translateY(-3px);border-color:rgba(245,192,68,.25)}
+.b h3{font-size:16px;font-weight:700;margin-bottom:6px}
+.b p{font-size:13.5px;color:var(--muted)}
+.b.wide{grid-column:span 2}
+.b .em{font-size:24px;display:block;margin-bottom:12px}
+.b.img-cell{padding:0;display:flex;align-items:stretch;overflow:hidden}
+.b.img-cell img{width:100%;height:100%;object-fit:cover;min-height:170px;display:block}
+
+.mkt-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+.mkt{background:var(--glass);border:1px solid var(--edge);border-radius:var(--r);padding:32px;backdrop-filter:blur(10px);position:relative;overflow:hidden;transition:transform .2s,border-color .2s}
+.mkt::after{content:"";position:absolute;top:-60%;right:-30%;width:70%;height:120%;background:radial-gradient(circle,rgba(245,192,68,.08),transparent 70%);opacity:0;transition:opacity .25s}
+.mkt:hover{transform:translateY(-3px);border-color:rgba(245,192,68,.25)}
+.mkt:hover::after{opacity:1}
+.mkt .em{font-size:26px;margin-bottom:14px;display:block}
+.mkt h3{font-family:'Unbounded',sans-serif;font-size:16.5px;font-weight:600;margin-bottom:8px}
+.mkt p{font-size:14px;color:var(--muted);max-width:360px}
+.mkt .syms{margin-top:22px;display:flex;gap:8px;flex-wrap:wrap}
+.mkt .q{position:absolute;top:28px;right:28px;font-family:'JetBrains Mono',monospace;font-size:13px}
+
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.step{background:var(--glass);border:1px solid var(--edge);border-radius:var(--r);padding:34px 30px;backdrop-filter:blur(10px)}
+.step .num{font-family:'Unbounded',sans-serif;font-size:46px;font-weight:700;line-height:1;background:linear-gradient(160deg,rgba(245,192,68,.9),rgba(245,192,68,.15));-webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:20px;display:block}
+.step h3{font-size:17px;font-weight:700;margin-bottom:8px}
+.step p{font-size:14px;color:var(--muted)}
+.step .tag{display:inline-block;margin-top:16px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--green);border:1px solid rgba(65,226,150,.25);background:rgba(65,226,150,.06);border-radius:999px;padding:4px 12px}
+
+.ref{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+.ref-flow{background:var(--glass);border:1px solid var(--edge);border-radius:26px;padding:34px;backdrop-filter:blur(12px)}
+.rf{display:flex;gap:16px;align-items:center;padding:16px 0;border-bottom:1px dashed rgba(255,255,255,.08)}
+.rf:last-child{border-bottom:none}
+.rf .ic{width:44px;height:44px;border-radius:14px;background:rgba(245,192,68,.1);border:1px solid rgba(245,192,68,.2);display:grid;place-items:center;font-size:19px;flex:none}
+.rf h4{font-size:14.5px;font-weight:700}
+.rf p{font-size:13px;color:var(--muted)}
+.ref-code{margin-top:22px;display:flex;gap:10px;align-items:center;background:rgba(0,0,0,.35);border:1px solid var(--edge);border-radius:14px;padding:13px 16px;font-family:'JetBrains Mono',monospace;font-size:13px}
+.ref-code .c{color:var(--gold);flex:1}
+.ref-code button{background:var(--glass-2);border:1px solid var(--edge);color:var(--text);border-radius:9px;padding:6px 14px;font-size:12px;cursor:pointer;font-family:'JetBrains Mono',monospace}
+.ref-note{font-size:11.5px;color:var(--faint);margin-top:14px;font-family:'JetBrains Mono',monospace}
+
+.partners{overflow:hidden;border-block:1px solid rgba(255,255,255,.05);background:rgba(255,255,255,.015);padding:34px 0}
+.p-track{display:flex;gap:20px;width:max-content;animation:tape 30s linear infinite}
+.partners:hover .p-track{animation-play-state:paused}
+.p-card{display:flex;align-items:center;gap:12px;background:var(--glass);border:1px solid var(--edge);border-radius:16px;padding:16px 26px;white-space:nowrap}
+.p-card .pl-mark{width:34px;height:34px;border-radius:10px;background:var(--glass-2);border:1px solid var(--edge);display:grid;place-items:center;font-size:15px}
+.p-card h4{font-size:14px;font-weight:700}
+.p-card p{font-size:11.5px;color:var(--faint);font-family:'JetBrains Mono',monospace}
+.p-card.ph-card{border-style:dashed;opacity:.55}
+
+.proof{background:var(--glass);border:1px solid var(--edge);border-radius:28px;padding:48px;backdrop-filter:blur(10px)}
+.proof-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:36px;margin-top:40px}
+.pr h3{font-size:14.5px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:9px}
+.pr h3 .dot{width:6px;height:6px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px rgba(245,192,68,.6);flex:none}
+.pr p{font-size:13px;color:var(--muted)}
+.pr .ph{color:var(--gold);font-family:'JetBrains Mono',monospace;font-size:11.5px}
+
+.cta{text-align:center;padding:130px 0}
+.cta h2{font-size:clamp(30px,4.4vw,52px)}
+.cta p{color:var(--muted);max-width:440px;margin:0 auto 40px}
+
+footer{border-top:1px solid rgba(255,255,255,.05);padding:60px 0 44px;font-size:13.5px;color:var(--muted)}
+.foot-top{display:flex;justify-content:space-between;gap:40px;flex-wrap:wrap;margin-bottom:48px}
+.foot-links{display:flex;gap:56px;flex-wrap:wrap}
+.foot-links h4{color:var(--text);font-size:13px;font-weight:700;margin-bottom:14px}
+.foot-links a{display:block;margin-bottom:9px;color:var(--muted)}
+.foot-links a:hover{color:var(--text)}
+.legal{border-top:1px solid rgba(255,255,255,.05);padding-top:30px;font-size:11.5px;line-height:1.8;color:var(--faint)}
+.legal p{margin-bottom:12px}
+.legal .ph{color:var(--gold);font-family:'JetBrains Mono',monospace;font-size:11px}
+
+.modal-back{position:fixed;inset:0;background:rgba(4,5,7,.75);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
+.modal-back.open{display:flex}
+.modal{background:linear-gradient(170deg,#14161C,#0E1014);border:1px solid rgba(255,255,255,.1);border-radius:26px;padding:40px 36px;width:100%;max-width:400px;position:relative;box-shadow:0 50px 120px rgba(0,0,0,.7)}
+.modal .x{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--faint);font-size:20px;cursor:pointer;padding:6px;line-height:1}
+.modal .x:hover{color:var(--text)}
+.modal h3{font-family:'Unbounded',sans-serif;font-size:18px;font-weight:600;text-align:center;margin-bottom:6px}
+.modal .sub{font-size:13px;color:var(--muted);text-align:center;margin-bottom:28px}
+.auth-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:var(--text);font-size:14.5px;font-weight:500;cursor:pointer;font-family:'Space Grotesk',sans-serif;margin-bottom:10px;transition:background .15s}
+.auth-btn:hover{background:rgba(255,255,255,.08)}
+.divider{display:flex;align-items:center;gap:14px;color:var(--faint);font-size:11px;margin:18px 0;font-family:'JetBrains Mono',monospace}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:rgba(255,255,255,.08)}
+.modal input{width:100%;padding:14px 16px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.3);color:var(--text);font-size:14.5px;font-family:'Space Grotesk',sans-serif;margin-bottom:10px}
+.modal input:focus{outline:none;border-color:var(--gold)}
+.modal input::placeholder{color:var(--faint)}
+.auth-go{width:100%;padding:14px;border-radius:14px;border:none;background:linear-gradient(120deg,var(--gold),var(--gold-hot));color:#171104;font-weight:700;font-size:14.5px;cursor:pointer;font-family:'Space Grotesk',sans-serif}
+.modal .fine{font-size:11px;color:var(--faint);text-align:center;margin-top:18px;line-height:1.6}
+.modal .fine a{color:var(--muted);text-decoration:underline;text-underline-offset:2px}
+
+@media (max-width:960px){
+  .mission,.mkt-grid,.ref{grid-template-columns:1fr}
+  .stats{grid-template-columns:1fr 1fr}
+  .bento{grid-template-columns:1fr 1fr}
+  .b.wide{grid-column:span 2}
+  .steps{grid-template-columns:1fr}
+  .proof{padding:34px 24px}
+  .proof-grid{grid-template-columns:1fr;gap:26px}
+  .nav-links{display:none}
+  .ref{gap:40px}
+}
+@media (max-width:560px){.bento{grid-template-columns:1fr}.b.wide{grid-column:span 1}}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+</style>
+</head>
+<body>
+
+<div class="orbs" aria-hidden="true"><div class="orb a"></div><div class="orb b"></div><div class="orb c"></div><div class="orb d"></div></div>
+
+<div class="riskbar">CFDs are leveraged. High risk of rapid loss — most retail accounts lose money.</div>
+
+<nav>
+  <div class="wrap nav-inner">
+    <a class="logo" href="#"><span class="mark">H</span>HeyTrader<span class="io">.io</span></a>
+    <div class="nav-links">
+      <a href="#assets">Assets</a>
+      <a href="#how">How it works</a>
+      <a href="#referral">Referral</a>
+      <a href="#trust">Trust</a>
+    </div>
+    <div class="nav-cta">
+      <button class="btn btn-gold" type="button" onclick="openAuth()">Connect</button>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="pill"><span class="dot"></span>LIVE · GOLD · INDICES · ENERGY · US STOCKS</div>
+    <h1>Markets that move.<br><span class="g">Trade them anywhere.</span></h1>
+    <p class="lede">Gold, Nasdaq, oil and the biggest US names — one account, web and mobile, priced to the tick.</p>
+    <div class="hero-actions">
+      <button class="btn btn-gold btn-lg" type="button" onclick="openAuth()">Trade Now</button>
+    </div>
+    <p class="hero-fine">CFD trading · you trade price movement, not the asset · <a href="#trust">how it works</a></p>
+    <div class="hero-chips">
+      <span class="chip">24/5 markets</span>
+      <span class="chip">Long &amp; short</span>
+      <span class="chip">From 0.01 lots</span>
+      <span class="chip">Web + mobile</span>
+    </div>
+  </div>
+
+  <div class="tape" aria-hidden="true">
+    <div class="tape-track">
+      <div class="tape-item"><span class="s">XAUUSD</span><span class="p">2,392.45</span><span class="up">▲ 0.52%</span></div>
+      <div class="tape-item"><span class="s">XAGUSD</span><span class="p">28.45</span><span class="up">▲ 0.35%</span></div>
+      <div class="tape-item"><span class="s">USOIL</span><span class="p">78.60</span><span class="down">▼ 0.15%</span></div>
+      <div class="tape-item"><span class="s">NAS100</span><span class="p">18,732.10</span><span class="up">▲ 0.68%</span></div>
+      <div class="tape-item"><span class="s">SPX500</span><span class="p">5,431.60</span><span class="up">▲ 0.41%</span></div>
+      <div class="tape-item"><span class="s">US30</span><span class="p">39,112.16</span><span class="down">▼ 0.08%</span></div>
+      <div class="tape-item"><span class="s">AAPL</span><span class="p">195.21</span><span class="up">▲ 1.15%</span></div>
+      <div class="tape-item"><span class="s">TSLA</span><span class="p">175.73</span><span class="down">▼ 0.42%</span></div>
+      <div class="tape-item"><span class="s">NVDA</span><span class="p">1,037.89</span><span class="up">▲ 2.48%</span></div>
+      <div class="tape-item"><span class="s">XAUUSD</span><span class="p">2,392.45</span><span class="up">▲ 0.52%</span></div>
+      <div class="tape-item"><span class="s">XAGUSD</span><span class="p">28.45</span><span class="up">▲ 0.35%</span></div>
+      <div class="tape-item"><span class="s">USOIL</span><span class="p">78.60</span><span class="down">▼ 0.15%</span></div>
+      <div class="tape-item"><span class="s">NAS100</span><span class="p">18,732.10</span><span class="up">▲ 0.68%</span></div>
+      <div class="tape-item"><span class="s">SPX500</span><span class="p">5,431.60</span><span class="up">▲ 0.41%</span></div>
+      <div class="tape-item"><span class="s">US30</span><span class="p">39,112.16</span><span class="down">▼ 0.08%</span></div>
+      <div class="tape-item"><span class="s">AAPL</span><span class="p">195.21</span><span class="up">▲ 1.15%</span></div>
+      <div class="tape-item"><span class="s">TSLA</span><span class="p">175.73</span><span class="down">▼ 0.42%</span></div>
+      <div class="tape-item"><span class="s">NVDA</span><span class="p">1,037.89</span><span class="up">▲ 2.48%</span></div>
+    </div>
+  </div>
+</header>
+
+<!-- MISSION & VISION -->
+<section id="mission" style="padding-top:90px">
+  <div class="wrap">
+    <div class="sec-head center">
+      <span class="k">Mission &amp; Vision</span>
+      <h2>Why we exist.</h2>
+    </div>
+    <div class="media">
+      <img src="images/mission.png" alt="Global markets orbit illustration" width="780" height="220">
+    </div>
+    <div class="mission">
+      <div class="m-card">
+        <span class="tag">Mission</span>
+        <h3>Make global markets feel local.</h3>
+        <p>The markets that move the world — gold, oil, the Nasdaq — have always belonged to people with terminals and connections. We're building the version where all you need is a phone, a verified account, and a clear head about the risk.</p>
+      </div>
+      <div class="m-card v">
+        <span class="tag">Vision</span>
+        <h3>Trading with nothing to hide.</h3>
+        <p>A generation raised on rug pulls doesn't trust vibes — it trusts receipts. Our long game is simple: be the platform where the license, the fees, and the risks are as visible as the charts.</p>
+      </div>
+      <div class="m-quote">
+        <p>"We don't want you to trade more.<br>We want you to trade <span class="g">knowing exactly what you're doing.</span>"</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY CHOOSE US -->
+<section id="why" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head center">
+      <span class="k">Why Choose Us</span>
+      <h2>Built different. On purpose.</h2>
+      <p>The numbers that actually matter when your money's on the line.</p>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><span class="n">0.01</span><span class="l">minimum lot size</span></div>
+      <div class="stat"><span class="n">24/5</span><span class="l">market access</span></div>
+      <div class="stat"><span class="n">2-way</span><span class="l">long &amp; short</span></div>
+      <div class="stat"><span class="n">0</span><span class="l">hidden fees</span></div>
+    </div>
+
+    <div class="bento">
+      <div class="b img-cell">
+        <img src="images/why-us.png" alt="Candlestick chart" width="680" height="400">
+      </div>
+      <div class="b wide">
+        <span class="em">🧪</span>
+        <h3>Start microscopic, scale on merit</h3>
+        <p>Micro lots from 0.01 mean you can learn with real skin in the game without betting the rent. Grow position size when your track record earns it — not before. And the demo runs on live prices, free, forever.</p>
+      </div>
+      <div class="b">
+        <span class="em">⚡</span>
+        <h3>Execution that keeps up</h3>
+        <p>Low-latency routing on Match-Trader infrastructure. No spinning wheels at the worst possible moment.</p>
+      </div>
+      <div class="b">
+        <span class="em">🧾</span>
+        <h3>Fees you can screenshot</h3>
+        <p>Spreads, swaps, commissions — published per instrument, before you trade. Zero mystery line items.</p>
+      </div>
+      <div class="b">
+        <span class="em">🛡️</span>
+        <h3>Can't go below zero</h3>
+        <p>Negative balance protection on every account. Your worst case is your balance — never your bank account.</p>
+      </div>
+      <div class="b wide" style="grid-column:1/-1">
+        <span class="em">🎛️</span>
+        <h3>Risk tools on by default</h3>
+        <p>Stop-loss available on every position, margin alerts before trouble hits, and clear per-trade margin math shown before you click buy. Leverage cuts both ways — our job is making sure you always see both edges.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SUPPORTED ASSETS -->
+<section id="assets" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head center">
+      <span class="k">Supported Assets</span>
+      <h2>One account.<br>Every market you care about.</h2>
+    </div>
+    <div class="media">
+      <img src="images/assets.png" alt="Gold bars with floating market prices" width="780" height="190">
+    </div>
+    <div class="mkt-grid">
+      <div class="mkt">
+        <span class="q mono up">2,392.45 ▲</span>
+        <span class="em">🥇</span>
+        <h3>Precious metals</h3>
+        <p>Gold and silver vs the dollar. The oldest trade, on the fastest rails.</p>
+        <div class="syms"><span class="chip">XAUUSD</span><span class="chip">XAGUSD</span></div>
+      </div>
+      <div class="mkt">
+        <span class="q mono up">18,732.10 ▲</span>
+        <span class="em">📈</span>
+        <h3>Indices</h3>
+        <p>Nasdaq, Dow, S&amp;P — ride the whole market, long or short.</p>
+        <div class="syms"><span class="chip">NAS100</span><span class="chip">US30</span><span class="chip">SPX500</span></div>
+      </div>
+      <div class="mkt">
+        <span class="q mono down">78.60 ▼</span>
+        <span class="em">🛢️</span>
+        <h3>Energy</h3>
+        <p>WTI, Brent and natural gas. Where macro actually happens.</p>
+        <div class="syms"><span class="chip">USOIL</span><span class="chip">UKOIL</span><span class="chip">NATGAS</span></div>
+      </div>
+      <div class="mkt">
+        <span class="q mono up">1,037.89 ▲</span>
+        <span class="em">🚀</span>
+        <h3>US stocks</h3>
+        <p>The names on your feed — Apple, Tesla, Nvidia — tradable both ways.</p>
+        <div class="syms"><span class="chip">AAPL</span><span class="chip">TSLA</span><span class="chip">NVDA</span><span class="chip">AMZN</span></div>
+      </div>
+    </div>
+    <p style="text-align:center;margin-top:26px;font-size:12px;color:var(--faint);font-family:'JetBrains Mono',monospace">all instruments are CFDs · you trade price movement, not the underlying asset</p>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head center">
+      <span class="k">How It Works</span>
+      <h2>Zero to trading in three moves.</h2>
+    </div>
+    <div class="media sm">
+      <img src="images/how-it-works.png" alt="HeyTrader mobile app" width="320" height="300">
+    </div>
+    <div class="steps">
+      <div class="step">
+        <span class="num">01</span>
+        <h3>Connect</h3>
+        <p>One tap with Google, Apple or email. No forms that feel like a mortgage application.</p>
+        <span class="tag">~ 30 seconds</span>
+      </div>
+      <div class="step">
+        <span class="num">02</span>
+        <h3>Verify</h3>
+        <p>Quick KYC — ID and a selfie. It's how we keep the platform clean and your withdrawals fast.</p>
+        <span class="tag">~ 5 minutes</span>
+      </div>
+      <div class="step">
+        <span class="num">03</span>
+        <h3>Trade</h3>
+        <p>Fund your account or start on the free demo with live prices. Every market, web and mobile.</p>
+        <span class="tag">demo is free forever</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REFERRAL -->
+<section id="referral" style="padding-top:0">
+  <div class="wrap ref">
+    <div>
+      <div class="media sm left">
+        <img src="images/referral.png" alt="Referral network" width="300" height="150">
+      </div>
+      <span class="k">Referral Program</span>
+      <h2>Good calls deserve a cut.</h2>
+      <p style="color:var(--muted);font-size:16px;margin-bottom:26px">Share your link. When friends sign up, verify and trade, you earn — tracked transparently in your dashboard, paid out like any other balance.</p>
+      <button class="btn btn-gold" type="button" onclick="openAuth()">Get your link</button>
+    </div>
+    <div class="ref-flow">
+      <div class="rf">
+        <div class="ic">🔗</div>
+        <div><h4>Share your link</h4><p>Every account gets a unique referral code.</p></div>
+      </div>
+      <div class="rf">
+        <div class="ic">✅</div>
+        <div><h4>They join &amp; verify</h4><p>Your friend connects, passes KYC and starts trading.</p></div>
+      </div>
+      <div class="rf">
+        <div class="ic">💰</div>
+        <div><h4>You earn</h4><p>Rewards land in your account — track every referral live.</p></div>
+      </div>
+      <div class="ref-code">
+        <span class="c">heytrader.io/r/YOURNAME</span>
+        <button type="button">copy</button>
+      </div>
+      <p class="ref-note">program terms apply · availability varies by jurisdiction</p>
+    </div>
+  </div>
+</section>
+
+<!-- ECOSYSTEM PARTNERS -->
+<section id="partners" style="padding:0 0 110px">
+  <div class="wrap">
+    <div class="sec-head center" style="margin-bottom:40px">
+      <span class="k">Ecosystem Partners</span>
+      <h2>The stack behind the screen.</h2>
+    </div>
+    <div class="media sm" style="margin-bottom:44px">
+      <img src="images/partners.png" alt="Technology stack layers" width="280" height="180">
+    </div>
+  </div>
+  <div class="partners">
+    <div class="p-track">
+      <div class="p-card"><div class="pl-mark">MT</div><div><h4>Match-Trader</h4><p>trading technology</p></div></div>
+      <div class="p-card ph-card"><div class="pl-mark">?</div><div><h4>[Liquidity Provider]</h4><p>market liquidity</p></div></div>
+      <div class="p-card ph-card"><div class="pl-mark">?</div><div><h4>[KYC Provider]</h4><p>identity verification</p></div></div>
+      <div class="p-card ph-card"><div class="pl-mark">?</div><div><h4>[Payment Partner]</h4><p>deposits &amp; withdrawals</p></div></div>
+      <div class="p-card ph-card"><div class="pl-mark">?</div><div><h4>[Data Provider]</h4><p>market data</p></div></div>
+      <div class="p-card"><div class="pl-mark">MT</div><div><h4>Match-Trader</h4><p>trading technology</p></div></div>
+      <div class="p-card ph-card"><div class="pl-mark">?</div><div><h4>[Liquidity Provider]</h4><p>market liquidity</p></div></div>
+      <div class="p-card ph-card"><div class="pl-mark">?</div><div><h4>[KYC Provider]</h4><p>identity verification</p></div></div>
+      <div class="p-card ph-card"><div class="pl-mark">?</div><div><h4>[Payment Partner]</h4><p>deposits &amp; withdrawals</p></div></div>
+      <div class="p-card ph-card"><div class="pl-mark">?</div><div><h4>[Data Provider]</h4><p>market data</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- TRUST & SECURITY -->
+<section id="trust" style="padding-top:0">
+  <div class="wrap">
+    <div class="proof">
+      <div class="sec-head center" style="margin-bottom:0">
+        <span class="k">Trust &amp; Security</span>
+        <div class="media sm" style="margin:0 auto 28px;max-width:170px">
+          <img src="images/trust.png" alt="Security shield" width="200" height="190">
+        </div>
+        <h2>The receipts.</h2>
+        <p>Leverage is serious. Here's exactly who we are and what you're trading.</p>
+      </div>
+      <div class="proof-grid">
+        <div class="pr">
+          <h3><span class="dot"></span>Licensed entity</h3>
+          <p>Operated by <span class="ph">[LEGAL ENTITY NAME]</span>, authorised by the FSCA (South Africa), FSP No. <span class="ph">[XXXXX]</span>.</p>
+        </div>
+        <div class="pr">
+          <h3><span class="dot"></span>Segregated funds</h3>
+          <p>Your money is held separately from ours, with negative balance protection on every account.</p>
+        </div>
+        <div class="pr">
+          <h3><span class="dot"></span>What a CFD is</h3>
+          <p>A leveraged derivative — you trade price movement, you don't own the asset, and losses compound fast.</p>
+        </div>
+        <div class="pr">
+          <h3><span class="dot"></span>KYC before trading</h3>
+          <p>Identity verification is required before you trade or withdraw. Standard AML applies.</p>
+        </div>
+        <div class="pr">
+          <h3><span class="dot"></span>Where we operate</h3>
+          <p>Not available in <span class="ph">[RESTRICTED JURISDICTIONS]</span>. We check residency at onboarding.</p>
+        </div>
+        <div class="pr">
+          <h3><span class="dot"></span>Everything published</h3>
+          <p>Risk disclosure, terms, and full contract specs — public, always. <a href="#" style="color:var(--gold)">Read them →</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta">
+  <div class="wrap">
+    <h2>Ready when<br>the market is.</h2>
+    <p>Start on a free demo with real prices, or connect and go live.</p>
+    <div class="hero-actions">
+      <button class="btn btn-gold btn-lg" type="button" onclick="openAuth()">Trade Now</button>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-top">
+      <div>
+        <a class="logo" href="#"><span class="mark">H</span>HeyTrader<span class="io">.io</span></a>
+        <p style="margin-top:16px;max-width:280px;font-size:13px">CFD trading on gold, indices, energy and US equities. Trading involves significant risk.</p>
+      </div>
+      <div class="foot-links">
+        <div>
+          <h4>Platform</h4>
+          <a href="#assets">Assets</a>
+          <a href="#how">How it works</a>
+          <a href="#referral">Referral program</a>
+          <a href="https://app.heytrader.io/demo">Demo account</a>
+        </div>
+        <div>
+          <h4>Company</h4>
+          <a href="#mission">Mission</a>
+          <a href="#partners">Partners</a>
+          <a href="#trust">Trust &amp; security</a>
+          <a href="#">Contact</a>
+        </div>
+        <div>
+          <h4>Legal</h4>
+          <a href="#">Risk disclosure</a>
+          <a href="#">Terms of business</a>
+          <a href="#">Privacy policy</a>
+          <a href="#">AML policy</a>
+        </div>
+      </div>
+    </div>
+    <div class="legal">
+      <p>HeyTrader.io is a trading name of <span class="ph">[LEGAL ENTITY NAME]</span>, registration no. <span class="ph">[COMPANY REG NO.]</span>, authorised and regulated by the Financial Sector Conduct Authority (FSCA) of South Africa, FSP No. <span class="ph">[XXXXX]</span>. Registered address: <span class="ph">[REGISTERED ADDRESS]</span>.</p>
+      <p>Risk warning: CFDs are complex, leveraged instruments and carry a high risk of losing money rapidly. The majority of retail investor accounts lose money when trading CFDs. Consider whether you understand how CFDs work and whether you can afford the high risk of losing your money. You do not own or have any rights to the underlying assets.</p>
+      <p>Referral program: subject to program terms; not available in jurisdictions where trading inducements are restricted.</p>
+      <p>This website is not directed at residents of <span class="ph">[RESTRICTED JURISDICTIONS]</span> or any jurisdiction where its use would be contrary to local law.</p>
+      <p>© 2026 <span class="ph">[LEGAL ENTITY NAME]</span>. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+<div class="modal-back" id="authModal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+  <div class="modal">
+    <button class="x" type="button" onclick="closeAuth()" aria-label="Close">×</button>
+    <h3 id="authTitle">Connect to HeyTrader</h3>
+    <p class="sub">Sign in or create your account — one step, either way.</p>
+    <button class="auth-btn" type="button">
+      <svg width="17" height="17" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l5.7-5.7C34.1 6.1 29.3 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.6-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.1 18.9 12 24 12c3.1 0 5.8 1.1 8 3l5.7-5.7C34.1 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.3 0-9.7-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.5l6.2 5.2C41.4 34.9 44 30 44 24c0-1.3-.1-2.6-.4-3.9z"/></svg>
+      Continue with Google
+    </button>
+    <button class="auth-btn" type="button">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8.88-.18 1.72-.86 2.94-.79 1.46.12 2.55.7 3.28 1.74-3.01 1.8-2.29 5.77.48 6.95-.55 1.45-1.27 2.88-2.78 4.27zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+      Continue with Apple
+    </button>
+    <div class="divider">or</div>
+    <input type="email" placeholder="Email address" autocomplete="email">
+    <button class="auth-go" type="button">Continue</button>
+    <p class="fine">By continuing you agree to our <a href="#">Terms of Business</a> and acknowledge the <a href="#">Risk Disclosure</a>. CFDs are leveraged products with a high risk of loss.</p>
+  </div>
+</div>
+
+<script>
+const modal = document.getElementById('authModal');
+function openAuth(){ modal.classList.add('open'); document.body.style.overflow='hidden'; }
+function closeAuth(){ modal.classList.remove('open'); document.body.style.overflow=''; }
+modal.addEventListener('click', e => { if(e.target === modal) closeAuth(); });
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeAuth(); });
+</script>
+
+</body>
+</html>
